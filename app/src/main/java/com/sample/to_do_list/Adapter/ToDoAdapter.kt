@@ -27,16 +27,21 @@ class ToDoAdapter(private val todoList: MutableList<ToDo>) :
 
     override fun getItemCount(): Int = todoList.size
 
-    fun updateList(newList: MutableList<ToDo>) {
+    fun addTask(todo: ToDo) {
+        todoList.add(todo)
+        notifyItemInserted(todoList.size - 1)
+    }
+
+    fun updateTask(position: Int, todo: ToDo) {
+        todoList[position] = todo
+        notifyItemChanged(position)
         todoList.clear()
-        todoList.addAll(newList)
         notifyDataSetChanged()
     }
 
-    fun swapItems(fromPosition: Int, toPosition: Int) {
-        val fromItem = todoList[fromPosition]
-        todoList.removeAt(fromPosition)
-        todoList.add(if (toPosition > fromPosition) toPosition - 1 else toPosition, fromItem)
-        notifyItemMoved(fromPosition, toPosition)
+    fun deleteTask(position: Int) {
+        todoList.removeAt(position)
+        notifyItemRemoved(position)
     }
 }
+
