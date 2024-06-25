@@ -11,15 +11,15 @@ class ToDoViewModel : ViewModel() {
 
     init {
         _todos.value = mutableListOf(
-            ToDo("Buy milk"),
-            ToDo("Buy eggs"),
-            ToDo("Buy bread")
+            ToDo(1, "Buy milk", true),
+            ToDo(2, "Buy milk", true),
+            ToDo(3, "Buy milk", true),
         )
     }
 
-    fun addTask(task: String) {
+    fun addTask(id: Int, task: String) {
         val currentList = _todos.value
-        currentList?.add(ToDo(task))
+        currentList?.add(ToDo(id, task))
         _todos.value = currentList!!
     }
 

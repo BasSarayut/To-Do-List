@@ -3,42 +3,40 @@ package com.sample.to_do_list
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.widget.EditText
-import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.sample.to_do_list.Adapter.ToDoAdapter
-import com.sample.to_do_list.ViewModel.ToDoViewModel
 import com.google.android.material.floatingactionbutton.FloatingActionButton
+import com.sample.to_do_list.Adapter.ToDoAdapter
+import com.sample.to_do_list.Fragment.FullScreenDialogFragment
+import com.sample.to_do_list.Model.ToDo
+import com.sample.to_do_list.ViewModel.ToDoViewModel
 
 class MainActivity : AppCompatActivity() {
-    private lateinit var todoViewModel: ToDoViewModel
     private lateinit var todoAdapter: ToDoAdapter
-    private lateinit var recyclerView: RecyclerView
-    private lateinit var fab: FloatingActionButton
+    private lateinit var todoViewModel: ToDoViewModel
+    private val todoList = mutableListOf<ToDo>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
         setContentView(R.layout.activity_main)
+
+        val recyclerView: RecyclerView = findViewById(R.id.recyclerView)
+        val fab: FloatingActionButton = findViewById(R.id.fab)
 
         todoViewModel = ViewModelProvider(this)[ToDoViewModel::class.java]
         todoAdapter = ToDoAdapter(mutableListOf())
 
-        recyclerView = findViewById(R.id.recyclerView)
-        fab = findViewById(R.id.fab)
+        todoAdapter = ToDoAdapter(todoList)
+        recyclerView.adapter = todoAdapter
+        recyclerView.layoutManager = LinearLayoutManager(this)
 
-        recyclerView.apply {
-            adapter = todoAdapter
-            layoutManager = LinearLayoutManager(this@MainActivity)
-        }
+/////////////////////////////////////////////////////////////////////////
 
-        todoViewModel.todos.observe(this, { todos ->
-            todos?.let { todoAdapter.updateList(it) }
-        })
+
 
         val itemTouchHelper = ItemTouchHelper(object : ItemTouchHelper.Callback() {
             override fun getMovementFlags(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder): Int {
@@ -59,28 +57,20 @@ class MainActivity : AppCompatActivity() {
         })
         itemTouchHelper.attachToRecyclerView(recyclerView)
 
+/////////////////////////////////////////////////////////////////////////
+
         fab.setOnClickListener {
+            // Add a new task
             showAddTaskDialog()
         }
-
     }
-
     private fun showAddTaskDialog() {
-        val dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_add_task, null)
-        val dialogBuilder = AlertDialog.Builder(this)
-            .setView(dialogView)
-            .setTitle("Add New Task")
-            .setPositiveButton("Add") { dialog, _ ->
-                val editText = dialogView.findViewById<EditText>(R.id.etTask)
-                val task = editText.text.toString()
-                if (task.isNotEmpty()) {
-                    todoViewModel.addTask(task)
-                }
-                dialog.dismiss()
-            }
-            .setNegativeButton("Cancel") { dialog, _ ->
-                dialog.dismiss()
-            }
-        dialogBuilder.create().show()
+        val dialog = FullScreenDialogFragment.newInstance()
+        dialog.onSaveListener = { task ->
+            val newTask = ToDo(todoList.size + 1, task)
+            todoAdapter.addTask(newTask)
+        }
+        dialog.show(supportFragmentManager, "FullScreenDialogFragment")
     }
+
 }
